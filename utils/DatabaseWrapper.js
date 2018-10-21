@@ -13,6 +13,32 @@ export default class DatabaseWrapper {
     this.tables[name] = schema;
   }
 
+  addRow = (table, dataMap) => {
+    const fields = [];
+    const values = [];
+
+    dataMap.forEach((value, key) => {
+      fields.push(key);
+      values.push(typeof value === 'string' ? `"${value}"` : value.toString());
+    });
+
+    const fieldsString = `(${fields.join(', ')})`;
+    const valuesString = `values(${values.join(', ')})`;
+    this.executeQuery(`insert into ${table} ${fieldsString} ${valuesString};`);
+  };
+
+  viewRow = () => {
+    // this.executeQuery(`select * from Foods where name = 'cucumber';`);
+  };
+
+  updateRow = () => {
+    // this.executeQuery(`update Foods set age = 55 where name = 'cucumber'`);
+  };
+
+  deleteRow = () => {
+    // this.executeQuery(`delete from Foods where name = 'cucumber'`);
+  };
+
   executeQuery(sqlStatement) {
     this.database.transaction(
       transaction => {
@@ -75,19 +101,3 @@ export default class DatabaseWrapper {
     return query;
   }
 }
-
-export const addRow = () => {
-  executeQuery(`insert into Foods (name, age) values('cucumber', 28);`);
-};
-
-export const viewRow = () => {
-  executeQuery(`select * from Foods where name = 'cucumber';`);
-};
-
-export const updateRow = () => {
-  executeQuery(`update Foods set age = 55 where name = 'cucumber'`);
-};
-
-export const deleteRow = () => {
-  executeQuery(`delete from Foods where name = 'cucumber'`);
-};

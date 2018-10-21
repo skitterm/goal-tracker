@@ -18,19 +18,19 @@ const RootStack = createStackNavigator(
     Create: CreateScreen
   },
   {
-    initialRouteName: 'Initial'
+    initialRouteName: 'Create'
   }
 );
 
 class App extends Component {
   constructor() {
     super();
-    const database = new DatabaseWrapper({ name: 'db.goalTracker' });
-    database.addTable('Goals', schema);
+    this.database = new DatabaseWrapper({ name: 'db.goalTracker' });
+    this.database.addTable('Goals', schema);
   }
 
   render() {
-    return <RootStack />;
+    return <RootStack screenProps={{ database: this.database }} />;
   }
 }
 
