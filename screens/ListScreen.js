@@ -13,7 +13,7 @@ class ListScreen extends Component {
           <Button 
             title="To Settings"            
             onPress={() => this.props.navigation.navigate('Details')}  
-          />
+          />          
       </View>
       );
   }
