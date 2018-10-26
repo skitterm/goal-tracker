@@ -27,7 +27,15 @@ class CreateScreen extends Component {
         ['timesAchieved', 0],
         ['timesMissed', 0]
       ]);
-      // this.props.screenProps.database.addRow('Goals', goalMap);
+
+      return this.props.screenProps.database
+        .addRow('Goals', goalMap)
+        .then(insertedId => {
+          debugger;
+        })
+        .catch(error => {
+          debugger;
+        });
     }
   };
 }

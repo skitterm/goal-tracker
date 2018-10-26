@@ -24,7 +24,12 @@ export default class DatabaseWrapper {
 
     const fieldsString = `(${fields.join(', ')})`;
     const valuesString = `values(${values.join(', ')})`;
-    this.executeQuery(`insert into ${table} ${fieldsString} ${valuesString};`);
+    return this.executeQuery(
+      `insert into ${table} ${fieldsString} ${valuesString};`
+    ).then(resultSet => {
+      return resultSet.insertId;
+    });
+    // return this.executeQuery(`delete from Goals where title = "Brush teeth"`);
   };
 
   viewRow = () => {
@@ -40,18 +45,26 @@ export default class DatabaseWrapper {
   };
 
   executeQuery(sqlStatement) {
-    this.database.transaction(
-      transaction => {
-        transaction.executeSql(
-          sqlStatement,
-          [],
-          this.onTransactionSuccess,
-          this.onTransactionError
-        );
-      },
-      this.onDBError,
-      this.onDBSuccess
-    );
+    return new Promise((resolve, reject) => {
+      this.database.transaction(
+        transaction => {
+          transaction.executeSql(
+            sqlStatement,
+            [],
+            (transaction, resultSet) => {
+              resolve(resultSet);
+            },
+            (transaction, error) => {
+              reject(error);
+            }
+          );
+        },
+        error => {
+          reject(error);
+        },
+        null
+      );
+    });
   }
 
   onTransactionSuccess = (transaction, resultSet) => {
