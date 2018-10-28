@@ -32,8 +32,10 @@ export default class DatabaseWrapper {
     // return this.executeQuery(`delete from Goals where title = "Brush teeth"`);
   };
 
-  viewRow = () => {
-    // this.executeQuery(`select * from Foods where name = 'cucumber';`);
+  viewAllRows = table => {
+    return this.executeQuery(`select * from ${table}`).then(resultSet => {
+      return resultSet.rows._array;
+    });
   };
 
   updateRow = () => {

@@ -18,7 +18,7 @@ const RootStack = createStackNavigator(
     Create: CreateScreen
   },
   {
-    initialRouteName: 'Create'
+    initialRouteName: 'List'
   }
 );
 

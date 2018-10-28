@@ -24,16 +24,19 @@ class ListScreen extends Component {
     };
   };
 
+  constructor() {
+    super();
+    this.state = {
+      items: []
+    };
+  }
+
   render() {
     return (
       <View>
         <FlatList
           style={{ backgroundColor: 'white' }}
-          data={[
-            { key: 'Brush Teeth' },
-            { key: 'Eat Breakfast' },
-            { key: 'Exercise' }
-          ]}
+          data={this.state.items}
           renderItem={({ item }) => (
             <Text
               style={{
@@ -63,6 +66,21 @@ class ListScreen extends Component {
     this.props.navigation.setParams({
       segueToCreate: this.segueToCreate
     });
+
+    this.props.screenProps.database
+      .viewAllRows('Goals')
+      .then(items => {
+        this.setState({
+          items: items.map(item => {
+            return {
+              key: item.title
+            };
+          })
+        });
+      })
+      .catch(error => {
+        debugger;
+      });
   };
 
   segueToCreate = () => {
