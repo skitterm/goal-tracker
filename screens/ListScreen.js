@@ -75,11 +75,18 @@ class ListScreen extends Component {
   };
 
   fetchItems = () => {
+    const sortField =
+      this.state.frequencyFilter === 'one-time' ? 'deadline' : 'title';
+
     this.props.screenProps.database
-      .readRows('Goals', {
-        field: 'frequency',
-        value: this.state.frequencyFilter
-      })
+      .readRows(
+        'Goals',
+        {
+          field: 'frequency',
+          value: this.state.frequencyFilter
+        },
+        sortField
+      )
       .then(items => {
         this.setState({
           items: items.map(item => {

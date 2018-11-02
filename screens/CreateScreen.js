@@ -114,7 +114,7 @@ class CreateScreen extends Component {
       return this.props.screenProps.database
         .addRow('Goals', goalMap)
         .then(insertedId => {
-          debugger;
+          this.props.navigation.navigate('List');
         })
         .catch(error => {
           debugger;

@@ -31,9 +31,11 @@ export default class DatabaseWrapper {
     });
   };
 
-  readRows = (table, condition) => {
+  readRows = (table, condition, sortField) => {
     return this.executeQuery(
-      `select * from ${table} where ${condition.field} = "${condition.value}" `
+      `select * from ${table} where ${condition.field} = "${
+        condition.value
+      }" order by ${sortField}`
     ).then(resultSet => {
       return resultSet.rows._array;
     });
