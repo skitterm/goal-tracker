@@ -58,7 +58,7 @@ class CreateScreen extends Component {
           <DatePickerIOS
             date={this.state.deadline}
             minimumDate={new Date()}
-            onDateChange={() => {}}
+            onDateChange={this.onDeadlineChange}
             minuteInterval={30}
             style={{
               display: this.state.frequency === 'one-time' ? 'flex' : 'none'
@@ -92,17 +92,19 @@ class CreateScreen extends Component {
     });
   };
 
-  onDeadlineChange = () => {
-    this.onUpdate();
+  onDeadlineChange = deadline => {
+    this.setState({
+      deadline
+    });
   };
 
   createGoal = () => {
     if (this.props.screenProps.database) {
       const goalMap = new Map([
-        ['title', 'Brush teeth'],
-        ['description', '2 minutes morning and night'],
-        ['frequency', 'daily'],
-        ['deadline', 1234567890],
+        ['title', this.state.title],
+        ['description', this.state.description],
+        ['frequency', this.state.frequency],
+        ['deadline', this.state.deadline.getTime()],
         ['inProgress', 1],
         ['completed', 0],
         ['timesAchieved', 0],

@@ -29,10 +29,17 @@ export default class DatabaseWrapper {
     ).then(resultSet => {
       return resultSet.insertId;
     });
-    // return this.executeQuery(`delete from Goals where title = "Brush teeth"`);
   };
 
-  viewAllRows = table => {
+  readRows = (table, condition) => {
+    return this.executeQuery(
+      `select * from ${table} where ${condition.field} = "${condition.value}" `
+    ).then(resultSet => {
+      return resultSet.rows._array;
+    });
+  };
+
+  readAllRows = table => {
     return this.executeQuery(`select * from ${table}`).then(resultSet => {
       return resultSet.rows._array;
     });

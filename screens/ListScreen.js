@@ -7,6 +7,7 @@ import {
   SegmentedControlIOS,
   FlatList
 } from 'react-native';
+import { NavigationEvents } from 'react-navigation';
 
 class ListScreen extends Component {
   static navigationOptions = ({ navigation }) => {
@@ -27,13 +28,15 @@ class ListScreen extends Component {
   constructor() {
     super();
     this.state = {
-      items: []
+      items: [],
+      frequencyFilter: 'daily'
     };
   }
 
   render() {
     return (
       <View>
+        <NavigationEvents onDidFocus={this.fetchItems} />
         <FlatList
           style={{ backgroundColor: 'white' }}
           data={this.state.items}
@@ -55,6 +58,7 @@ class ListScreen extends Component {
               style={{ marginHorizontal: 15, marginVertical: 10 }}
               values={['D', 'W', 'M', '1x']}
               selectedIndex={0}
+              onValueChange={this.onFilterChange}
             />
           }
         />
@@ -67,8 +71,15 @@ class ListScreen extends Component {
       segueToCreate: this.segueToCreate
     });
 
+    this.fetchItems();
+  };
+
+  fetchItems = () => {
     this.props.screenProps.database
-      .viewAllRows('Goals')
+      .readRows('Goals', {
+        field: 'frequency',
+        value: this.state.frequencyFilter
+      })
       .then(items => {
         this.setState({
           items: items.map(item => {
@@ -85,6 +96,24 @@ class ListScreen extends Component {
 
   segueToCreate = () => {
     this.props.navigation.navigate('Create');
+  };
+
+  onFilterChange = value => {
+    const filterOptions = {
+      D: 'daily',
+      W: 'weekly',
+      M: 'monthly',
+      '1x': 'one-time'
+    };
+
+    this.setState(
+      {
+        frequencyFilter: filterOptions[value]
+      },
+      () => {
+        this.fetchItems();
+      }
+    );
   };
 }
 
