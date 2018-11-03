@@ -8,6 +8,7 @@ import {
   FlatList
 } from 'react-native';
 import { NavigationEvents } from 'react-navigation';
+import Swipeable from 'react-native-gesture-handler/Swipeable';
 
 class ListScreen extends Component {
   static navigationOptions = ({ navigation }) => {
@@ -48,16 +49,26 @@ class ListScreen extends Component {
           style={{ backgroundColor: 'white' }}
           data={this.getFilteredItems()}
           renderItem={({ item }) => (
-            <Text
-              style={{
-                fontSize: 18,
-                color: '#333',
-                paddingVertical: 15,
-                paddingHorizontal: 15
-              }}
+            <Swipeable
+              renderRightActions={this.renderItemRightActions.bind(
+                null,
+                item.id
+              )}
+              overshootLeft={false}
+              overshootRight={false}
             >
-              {item.key}
-            </Text>
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: '#333',
+                  backgroundColor: 'white',
+                  paddingVertical: 15,
+                  paddingHorizontal: 15
+                }}
+              >
+                {item.title}
+              </Text>
+            </Swipeable>
           )}
           ItemSeparatorComponent={SomethingElse}
           ListHeaderComponent={
@@ -72,6 +83,36 @@ class ListScreen extends Component {
       </View>
     );
   }
+
+  renderItemRightActions = id => {
+    return (
+      <View style={{ backgroundColor: 'red' }}>
+        <Button
+          onPress={() => {
+            this.deleteItem(id);
+          }}
+          title="Delete"
+        />
+      </View>
+    );
+  };
+
+  deleteItem = id => {
+    return this.props.screenProps.database
+      .deleteRow('Goals', {
+        field: 'id',
+        value: id
+      })
+      .then(rowsAffected => {
+        // if we actually deleted something, reload the list
+        if (rowsAffected > 0) {
+          this.fetchItems();
+        }
+      })
+      .catch(error => {
+        debugger;
+      });
+  };
 
   componentDidMount = () => {
     this.props.navigation.setParams({
@@ -111,9 +152,7 @@ class ListScreen extends Component {
       .filter(item => item.frequency === this.state.frequency)
       .sort(comparator)
       .map(item => {
-        return {
-          key: item.title
-        };
+        return Object.assign({}, item, { key: item.id.toString() });
       });
   };
 

@@ -51,8 +51,12 @@ export default class DatabaseWrapper {
     // this.executeQuery(`update Foods set age = 55 where name = 'cucumber'`);
   };
 
-  deleteRow = () => {
-    // this.executeQuery(`delete from Foods where name = 'cucumber'`);
+  deleteRow = (table, condition) => {
+    return this.executeQuery(
+      `delete from ${table} where ${condition.field} = "${condition.value}"`
+    ).then(resultSet => {
+      return resultSet.rowsAffected;
+    });
   };
 
   executeQuery(sqlStatement) {
