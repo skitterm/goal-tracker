@@ -5,23 +5,33 @@ import {
   View,
   Button,
   SegmentedControlIOS,
-  FlatList
+  FlatList,
+  TouchableOpacity
 } from 'react-native';
 import { NavigationEvents } from 'react-navigation';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
+import { MaterialIcons } from '@expo/vector-icons';
+import theme from '../utils/theme';
+import SwipeableActionButton from '../components/SwipeableActionButton';
 
 class ListScreen extends Component {
   static navigationOptions = ({ navigation }) => {
     return {
       title: 'Goals List',
       headerRight: (
-        <Button
-          title="Create"
+        <TouchableOpacity
           onPress={() => {
             // segueToCreate doesn't exist initially
             navigation.getParam('segueToCreate')();
           }}
-        />
+          style={{ paddingHorizontal: 8 }}
+        >
+          <MaterialIcons
+            name="add"
+            size={theme.icon.size}
+            color={theme.icon.colorPrimary}
+          />
+        </TouchableOpacity>
       )
     };
   };
@@ -46,7 +56,7 @@ class ListScreen extends Component {
       <View>
         <NavigationEvents onDidFocus={this.onDidFocus} />
         <FlatList
-          style={{ backgroundColor: 'white' }}
+          style={{ backgroundColor: theme.color.background }}
           data={this.getFilteredItems()}
           renderItem={({ item }) => (
             <Swipeable
@@ -60,8 +70,8 @@ class ListScreen extends Component {
               <Text
                 style={{
                   fontSize: 18,
-                  color: '#333',
-                  backgroundColor: 'white',
+                  color: theme.text.colorPrimary,
+                  backgroundColor: theme.color.background,
                   paddingVertical: 15,
                   paddingHorizontal: 15
                 }}
@@ -86,12 +96,16 @@ class ListScreen extends Component {
 
   renderItemRightActions = id => {
     return (
-      <View style={{ backgroundColor: 'red' }}>
-        <Button
+      <View style={{ display: 'flex', flexDirection: 'row' }}>
+        <SwipeableActionButton
+          onPress={this.segueToCreate.bind(this, id)}
+          iconName="edit"
+        />
+        <SwipeableActionButton
           onPress={() => {
             this.deleteItem(id);
           }}
-          title="Delete"
+          iconName="delete"
         />
       </View>
     );
@@ -192,7 +206,9 @@ class ListScreen extends Component {
 
 class SomethingElse extends Component {
   render() {
-    return <View style={{ borderTopColor: '#eee', borderTopWidth: 1 }} />;
+    return (
+      <View style={{ borderTopColor: theme.color.border, borderTopWidth: 1 }} />
+    );
   }
 }
 
