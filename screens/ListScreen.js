@@ -25,21 +25,28 @@ class ListScreen extends Component {
     };
   };
 
+  filterIndex = {
+    daily: 0,
+    weekly: 1,
+    monthly: 2,
+    'one-time': 3
+  };
+
   constructor() {
     super();
     this.state = {
       items: [],
-      frequencyFilter: 'daily'
+      frequency: 'daily'
     };
   }
 
   render() {
     return (
       <View>
-        <NavigationEvents onDidFocus={this.fetchItems} />
+        <NavigationEvents onDidFocus={this.onDidFocus} />
         <FlatList
           style={{ backgroundColor: 'white' }}
-          data={this.state.items}
+          data={this.getFilteredItems()}
           renderItem={({ item }) => (
             <Text
               style={{
@@ -57,7 +64,7 @@ class ListScreen extends Component {
             <SegmentedControlIOS
               style={{ marginHorizontal: 15, marginVertical: 10 }}
               values={['D', 'W', 'M', '1x']}
-              selectedIndex={0}
+              selectedIndex={this.filterIndex[this.state.frequency]}
               onValueChange={this.onFilterChange}
             />
           }
@@ -74,31 +81,56 @@ class ListScreen extends Component {
     this.fetchItems();
   };
 
-  fetchItems = () => {
-    const sortField =
-      this.state.frequencyFilter === 'one-time' ? 'deadline' : 'title';
+  onDidFocus = () => {
+    this.setState({
+      frequency: this.props.navigation.getParam('frequency', 'daily')
+    });
+    this.fetchItems();
+  };
 
+  fetchItems = () => {
     this.props.screenProps.database
-      .readRows(
-        'Goals',
-        {
-          field: 'frequency',
-          value: this.state.frequencyFilter
-        },
-        sortField
-      )
+      .readAllRows('Goals')
       .then(items => {
         this.setState({
-          items: items.map(item => {
-            return {
-              key: item.title
-            };
-          })
+          items
         });
       })
       .catch(error => {
         debugger;
       });
+  };
+
+  getFilteredItems = () => {
+    const comparator =
+      this.state.frequency === 'one-time'
+        ? this.dateComparator
+        : this.alphabeticalComparator;
+
+    return this.state.items
+      .filter(item => item.frequency === this.state.frequency)
+      .sort(comparator)
+      .map(item => {
+        return {
+          key: item.title
+        };
+      });
+  };
+
+  alphabeticalComparator = (a, b) => {
+    const titleA = a.title.toLowerCase();
+    const titleB = b.title.toLowerCase();
+    if (titleA < titleB) {
+      return -1;
+    }
+    if (titleA > titleB) {
+      return 1;
+    }
+    return 0;
+  };
+
+  dateComparator = (a, b) => {
+    return a.deadline - b.deadline;
   };
 
   segueToCreate = () => {
@@ -113,14 +145,9 @@ class ListScreen extends Component {
       '1x': 'one-time'
     };
 
-    this.setState(
-      {
-        frequencyFilter: filterOptions[value]
-      },
-      () => {
-        this.fetchItems();
-      }
-    );
+    this.setState({
+      frequency: filterOptions[value]
+    });
   };
 }
 
