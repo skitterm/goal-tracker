@@ -5,7 +5,6 @@ import InitialScreen from './screens/InitialScreen';
 import ListScreen from './screens/ListScreen';
 import DetailsScreen from './screens/DetailsScreen';
 import EditScreen from './screens/EditScreen';
-import CreateScreen from './screens/CreateScreen';
 import DatabaseWrapper from './utils/DatabaseWrapper';
 import schema from './utils/schema';
 
@@ -14,8 +13,7 @@ const RootStack = createStackNavigator(
     Initial: InitialScreen,
     List: ListScreen,
     Details: DetailsScreen,
-    Edit: EditScreen,
-    Create: CreateScreen
+    Edit: EditScreen
   },
   {
     initialRouteName: 'List'

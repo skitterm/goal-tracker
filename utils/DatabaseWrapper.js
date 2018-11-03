@@ -31,11 +31,9 @@ export default class DatabaseWrapper {
     });
   };
 
-  readRows = (table, condition, sortField) => {
+  readRows = (table, condition) => {
     return this.executeQuery(
-      `select * from ${table} where ${condition.field} = "${
-        condition.value
-      }" order by ${sortField}`
+      `select * from ${table} where ${condition.field} = "${condition.value}"`
     ).then(resultSet => {
       return resultSet.rows._array;
     });
@@ -47,8 +45,26 @@ export default class DatabaseWrapper {
     });
   };
 
-  updateRow = () => {
-    // this.executeQuery(`update Foods set age = 55 where name = 'cucumber'`);
+  updateRow = (table, fieldsToUpdate, condition) => {
+    let setClause = '';
+
+    for (let i = 0; i < fieldsToUpdate.length; i++) {
+      const field = fieldsToUpdate[i];
+      const fieldValue =
+        typeof field.value === 'string' ? `"${field.value}"` : field.value;
+      if (i > 0) {
+        setClause += ', ';
+      }
+      setClause += `${field.name} = ${fieldValue}`;
+    }
+
+    return this.executeQuery(
+      `update ${table} set ${setClause} where ${condition.field} = "${
+        condition.value
+      }"`
+    ).then(resultSet => {
+      return resultSet.rowsAffected;
+    });
   };
 
   deleteRow = (table, condition) => {

@@ -1,37 +1,23 @@
 import React, { Component } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  Button,
-  SegmentedControlIOS,
-  FlatList,
-  TouchableOpacity
-} from 'react-native';
+import { Text, View, SegmentedControlIOS, FlatList } from 'react-native';
 import { NavigationEvents } from 'react-navigation';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
-import { MaterialIcons } from '@expo/vector-icons';
 import theme from '../utils/theme';
 import SwipeableActionButton from '../components/SwipeableActionButton';
+import HeaderButton from '../components/HeaderButton';
 
 class ListScreen extends Component {
   static navigationOptions = ({ navigation }) => {
     return {
       title: 'Goals List',
       headerRight: (
-        <TouchableOpacity
+        <HeaderButton
+          iconName="add"
           onPress={() => {
-            // segueToCreate doesn't exist initially
-            navigation.getParam('segueToCreate')();
+            // segueToEdit doesn't exist initially
+            navigation.getParam('segueToEdit')();
           }}
-          style={{ paddingHorizontal: 8 }}
-        >
-          <MaterialIcons
-            name="add"
-            size={theme.icon.size}
-            color={theme.icon.colorPrimary}
-          />
-        </TouchableOpacity>
+        />
       )
     };
   };
@@ -98,7 +84,7 @@ class ListScreen extends Component {
     return (
       <View style={{ display: 'flex', flexDirection: 'row' }}>
         <SwipeableActionButton
-          onPress={this.segueToCreate.bind(this, id)}
+          onPress={this.segueToEdit.bind(this, id)}
           iconName="edit"
         />
         <SwipeableActionButton
@@ -130,7 +116,7 @@ class ListScreen extends Component {
 
   componentDidMount = () => {
     this.props.navigation.setParams({
-      segueToCreate: this.segueToCreate
+      segueToEdit: this.segueToEdit
     });
 
     this.fetchItems();
@@ -186,8 +172,10 @@ class ListScreen extends Component {
     return a.deadline - b.deadline;
   };
 
-  segueToCreate = () => {
-    this.props.navigation.navigate('Create');
+  segueToEdit = id => {
+    this.props.navigation.navigate('Edit', {
+      id
+    });
   };
 
   onFilterChange = value => {

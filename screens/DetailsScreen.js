@@ -1,21 +1,21 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View,  Button } from 'react-native';
+import { StyleSheet, Text, View, Button } from 'react-native';
 
 class DetailsScreen extends Component {
   static navigationOptions = {
-      title: 'Goal Details'
+    title: 'Goal Details'
   };
 
   render() {
-      return (
+    return (
       <View>
-          <Text>Details</Text>
-          <Button 
-            title="To Settings"            
-            onPress={() => this.props.navigation.navigate('Create')}  
-          />
+        <Text>Details</Text>
+        <Button
+          title="To Settings"
+          onPress={() => this.props.navigation.navigate('List')}
+        />
       </View>
-      );
+    );
   }
 }
 

@@ -31,7 +31,7 @@ class InitialScreen extends Component {
         </Text>
         <Button
           title="Create My First Goal"
-          onPress={() => this.props.navigation.navigate('Create')}
+          onPress={() => this.props.navigation.navigate('Edit')}
         />
       </View>
     );
