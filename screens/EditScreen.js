@@ -9,6 +9,7 @@ import {
   TextInput,
   KeyboardAvoidingView
 } from 'react-native';
+import HeaderButton from '../components/HeaderButton';
 
 class EditScreen extends Component {
   static navigationOptions = ({ navigation }) => {
@@ -16,7 +17,16 @@ class EditScreen extends Component {
       title:
         typeof navigation.getParam('id') === 'number'
           ? 'Edit Goal'
-          : 'Create a Goal'
+          : 'Create a Goal',
+      headerRight: (
+        <HeaderButton
+          iconName="delete"
+          onPress={() => {
+            // deleteItem doesn't exist initially
+            navigation.getParam('deleteItem')();
+          }}
+        />
+      )
     };
   };
 
@@ -35,13 +45,13 @@ class EditScreen extends Component {
       <Button
         title="Update Goal"
         disabled={this.state.title.length === 0}
-        onPress={this.updateGoal}
+        onPress={this.updateItem}
       />
     ) : (
       <Button
         title="Create Goal"
         disabled={this.state.title.length === 0}
-        onPress={this.createGoal}
+        onPress={this.createItem}
       />
     );
 
@@ -111,6 +121,10 @@ class EditScreen extends Component {
           debugger;
         });
     }
+
+    this.props.navigation.setParams({
+      deleteItem: this.deleteItem
+    });
   }
 
   hasId = () => {
@@ -141,7 +155,7 @@ class EditScreen extends Component {
     });
   };
 
-  createGoal = () => {
+  createItem = () => {
     if (this.props.screenProps.database) {
       const goalMap = new Map([
         ['title', this.state.title],
@@ -167,7 +181,7 @@ class EditScreen extends Component {
     }
   };
 
-  updateGoal = () => {
+  updateItem = () => {
     if (this.props.screenProps.database) {
       return this.props.screenProps.database
         .updateRow(
@@ -192,6 +206,22 @@ class EditScreen extends Component {
           debugger;
         });
     }
+  };
+
+  deleteItem = () => {
+    return this.props.screenProps.database
+      .deleteRow('Goals', {
+        field: 'id',
+        value: this.props.navigation.getParam('id')
+      })
+      .then(rowsAffected => {
+        this.props.navigation.navigate('List', {
+          frequency: this.state.frequency
+        });
+      })
+      .catch(error => {
+        debugger;
+      });
   };
 }
 
