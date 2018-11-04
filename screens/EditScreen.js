@@ -18,15 +18,16 @@ class EditScreen extends Component {
         typeof navigation.getParam('id') === 'number'
           ? 'Edit Goal'
           : 'Create a Goal',
-      headerRight: (
-        <HeaderButton
-          iconName="delete"
-          onPress={() => {
-            // deleteItem doesn't exist initially
-            navigation.getParam('deleteItem')();
-          }}
-        />
-      )
+      headerRight:
+        typeof navigation.getParam('id') === 'number' ? (
+          <HeaderButton
+            iconName="delete"
+            onPress={() => {
+              // deleteItem doesn't exist initially
+              navigation.getParam('deleteItem')();
+            }}
+          />
+        ) : null
     };
   };
 
