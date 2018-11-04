@@ -35,37 +35,54 @@ class ListScreen extends Component {
       items: [],
       frequency: 'daily'
     };
+    // for some reason doing this with state doesn't work (ref.current is null), so use instance variable instead
+    this.swipedRefs = [];
   }
 
   render() {
     return (
       <View>
-        <NavigationEvents onDidFocus={this.onDidFocus} />
+        <NavigationEvents
+          onDidFocus={this.onDidFocus}
+          onDidBlur={this.onDidBlur}
+        />
         <FlatList
           style={{ backgroundColor: theme.color.background }}
           data={this.getFilteredItems()}
-          renderItem={({ item }) => (
-            <Swipeable
-              renderRightActions={this.renderItemRightActions.bind(
-                null,
-                item.id
-              )}
-              overshootLeft={false}
-              overshootRight={false}
-            >
-              <Text
-                style={{
-                  fontSize: 18,
-                  color: theme.text.colorPrimary,
-                  backgroundColor: theme.color.background,
-                  paddingVertical: 15,
-                  paddingHorizontal: 15
-                }}
+          renderItem={({ item }) => {
+            // we only want to know about the rows that have been swiped, so create the ref here,
+            // and if the item is swiped we'll hold onto it in this.swipedRefs.
+            const ref = React.createRef();
+            return (
+              <Swipeable
+                renderLeftActions={this.renderItemLeftActions.bind(
+                  null,
+                  item.id
+                )}
+                renderRightActions={this.renderItemRightActions.bind(
+                  null,
+                  item.id
+                )}
+                onSwipeableLeftOpen={this.onSwipedOpen.bind(null, ref)}
+                onSwipeableRightOpen={this.onSwipedOpen.bind(null, ref)}
+                overshootLeft={false}
+                overshootRight={false}
+                ref={ref}
               >
-                {item.title}
-              </Text>
-            </Swipeable>
-          )}
+                <Text
+                  style={{
+                    fontSize: 18,
+                    color: theme.text.colorPrimary,
+                    backgroundColor: theme.color.background,
+                    paddingVertical: 15,
+                    paddingHorizontal: 15
+                  }}
+                >
+                  {item.title}
+                </Text>
+              </Swipeable>
+            );
+          }}
           ItemSeparatorComponent={SomethingElse}
           ListHeaderComponent={
             <SegmentedControlIOS
@@ -79,6 +96,21 @@ class ListScreen extends Component {
       </View>
     );
   }
+
+  onSwipedOpen = ref => {
+    const refs = this.swipedRefs.slice(0);
+    refs.push(ref);
+    this.swipedRefs = refs;
+  };
+
+  renderItemLeftActions = id => {
+    return (
+      <View style={{ display: 'flex', flexDirection: 'row' }}>
+        <SwipeableActionButton onPress={() => {}} iconName="check" />
+        <SwipeableActionButton onPress={() => {}} iconName="close" />
+      </View>
+    );
+  };
 
   renderItemRightActions = id => {
     return (
@@ -126,7 +158,15 @@ class ListScreen extends Component {
     this.setState({
       frequency: this.props.navigation.getParam('frequency', 'daily')
     });
+
     this.fetchItems();
+  };
+
+  onDidBlur = () => {
+    // close all of the expanded swipeable rows
+    for (let ref of this.swipedRefs) {
+      ref.current && ref.current.close();
+    }
   };
 
   fetchItems = () => {
