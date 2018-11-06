@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Text, View, SegmentedControlIOS, FlatList } from 'react-native';
+import { Text, View, SegmentedControlIOS, SectionList } from 'react-native';
 import { NavigationEvents } from 'react-navigation';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import theme from '../utils/theme';
@@ -41,24 +41,43 @@ class ListScreen extends Component {
 
   render() {
     return (
-      <View>
+      <View style={{ backgroundColor: theme.color.background, flex: 1 }}>
         <NavigationEvents
           onDidFocus={this.onDidFocus}
           onDidBlur={this.onDidBlur}
         />
-        <FlatList
-          style={{ backgroundColor: theme.color.background }}
-          data={this.getFilteredItems()}
+        <SegmentedControlIOS
+          style={{ marginHorizontal: 15, marginVertical: 10 }}
+          values={['D', 'W', 'M', '1x']}
+          selectedIndex={this.filterIndex[this.state.frequency]}
+          onValueChange={this.onFilterChange}
+        />
+        <SectionList
+          style={{ flex: 1 }}
+          sections={[
+            { title: 'To-Do', data: this.getFilteredItems(false) },
+            { title: 'Done', data: this.getFilteredItems(true) }
+          ]}
+          renderSectionHeader={info => (
+            <Text
+              style={{
+                fontWeight: 'bold',
+                backgroundColor: '#eee',
+                fontSize: 24,
+                paddingVertical: 3,
+                paddingHorizontal: 15
+              }}
+            >
+              {info.section.title}
+            </Text>
+          )}
           renderItem={({ item }) => {
             // we only want to know about the rows that have been swiped, so create the ref here,
             // and if the item is swiped we'll hold onto it in this.swipedRefs.
             const ref = React.createRef();
             return (
               <Swipeable
-                renderLeftActions={this.renderItemLeftActions.bind(
-                  null,
-                  item.id
-                )}
+                renderLeftActions={this.renderItemLeftActions.bind(null, item)}
                 renderRightActions={this.renderItemRightActions.bind(
                   null,
                   item.id
@@ -84,14 +103,6 @@ class ListScreen extends Component {
             );
           }}
           ItemSeparatorComponent={SomethingElse}
-          ListHeaderComponent={
-            <SegmentedControlIOS
-              style={{ marginHorizontal: 15, marginVertical: 10 }}
-              values={['D', 'W', 'M', '1x']}
-              selectedIndex={this.filterIndex[this.state.frequency]}
-              onValueChange={this.onFilterChange}
-            />
-          }
         />
       </View>
     );
@@ -103,11 +114,13 @@ class ListScreen extends Component {
     this.swipedRefs = refs;
   };
 
-  renderItemLeftActions = id => {
-    return (
+  renderItemLeftActions = item => {
+    return item.completed ? null : (
       <View style={{ display: 'flex', flexDirection: 'row' }}>
-        <SwipeableActionButton onPress={() => {}} iconName="check" />
-        <SwipeableActionButton onPress={() => {}} iconName="close" />
+        <SwipeableActionButton
+          onPress={this.completeItem.bind(this, item)}
+          iconName="check"
+        />
       </View>
     );
   };
@@ -182,7 +195,7 @@ class ListScreen extends Component {
       });
   };
 
-  getFilteredItems = () => {
+  getFilteredItems = getCompletedItems => {
     const comparator =
       this.state.frequency === 'one-time'
         ? this.dateComparator
@@ -190,6 +203,11 @@ class ListScreen extends Component {
 
     return this.state.items
       .filter(item => item.frequency === this.state.frequency)
+      .filter(
+        item =>
+          // SQLite stores booleans as 1s and 0s, not true/false
+          getCompletedItems ? item.completed === 1 : item.completed === 0
+      )
       .sort(comparator)
       .map(item => {
         return Object.assign({}, item, { key: item.id.toString() });
@@ -229,6 +247,30 @@ class ListScreen extends Component {
     this.setState({
       frequency: filterOptions[value]
     });
+  };
+
+  completeItem = item => {
+    if (this.props.screenProps.database) {
+      return this.props.screenProps.database
+        .updateRow(
+          'Goals',
+          [
+            { name: 'completed', value: 1 },
+            { name: 'inProgress', value: 0 },
+            { name: 'timesAchieved', value: item.timesAchieved + 1 }
+          ],
+          {
+            field: 'id',
+            value: item.id
+          }
+        )
+        .then(rowsAffected => {
+          this.fetchItems();
+        })
+        .catch(error => {
+          debugger;
+        });
+    }
   };
 }
 
