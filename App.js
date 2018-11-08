@@ -16,7 +16,7 @@ const RootStack = createStackNavigator(
     Edit: EditScreen
   },
   {
-    initialRouteName: 'List'
+    initialRouteName: 'Initial'
   }
 );
 

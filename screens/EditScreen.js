@@ -152,7 +152,7 @@ class EditScreen extends Component {
 
   onDeadlineChange = deadline => {
     this.setState({
-      deadline
+      deadline: deadline.getTime()
     });
   };
 
