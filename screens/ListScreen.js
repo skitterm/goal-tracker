@@ -40,6 +40,74 @@ class ListScreen extends Component {
   }
 
   render() {
+    const toDoItems = { title: 'To-Do', data: this.getFilteredItems(false) };
+    const doneItems = { title: 'Done', data: this.getFilteredItems(true) };
+    const sections = [];
+    let showList = true;
+    if (toDoItems.data.length) {
+      sections.push(toDoItems);
+    }
+    if (doneItems.data.length) {
+      sections.push(doneItems);
+    }
+    if (!toDoItems.data.length && !doneItems.data.length) {
+      showList = false;
+    }
+
+    const mainContent = showList ? (
+      <SectionList
+        style={{ flex: 1 }}
+        sections={sections}
+        renderSectionHeader={info => (
+          <Text
+            style={{
+              fontWeight: 'bold',
+              backgroundColor: '#eee',
+              fontSize: 24,
+              paddingVertical: 3,
+              paddingHorizontal: 15
+            }}
+          >
+            {info.section.title}
+          </Text>
+        )}
+        renderItem={({ item }) => {
+          // we only want to know about the rows that have been swiped, so create the ref here,
+          // and if the item is swiped we'll hold onto it in this.swipedRefs.
+          const ref = React.createRef();
+          return (
+            <Swipeable
+              renderLeftActions={this.renderItemLeftActions.bind(null, item)}
+              renderRightActions={this.renderItemRightActions.bind(
+                null,
+                item.id
+              )}
+              onSwipeableLeftOpen={this.onSwipedOpen.bind(null, ref)}
+              onSwipeableRightOpen={this.onSwipedOpen.bind(null, ref)}
+              overshootLeft={false}
+              overshootRight={false}
+              ref={ref}
+            >
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: theme.text.colorPrimary,
+                  backgroundColor: theme.color.background,
+                  paddingVertical: 15,
+                  paddingHorizontal: 15
+                }}
+              >
+                {item.title}
+              </Text>
+            </Swipeable>
+          );
+        }}
+        ItemSeparatorComponent={SomethingElse}
+      />
+    ) : (
+      this.renderEmptyList()
+    );
+
     return (
       <View style={{ backgroundColor: theme.color.background, flex: 1 }}>
         <NavigationEvents
@@ -52,58 +120,7 @@ class ListScreen extends Component {
           selectedIndex={this.filterIndex[this.state.frequency]}
           onValueChange={this.onFilterChange}
         />
-        <SectionList
-          style={{ flex: 1 }}
-          sections={[
-            { title: 'To-Do', data: this.getFilteredItems(false) },
-            { title: 'Done', data: this.getFilteredItems(true) }
-          ]}
-          renderSectionHeader={info => (
-            <Text
-              style={{
-                fontWeight: 'bold',
-                backgroundColor: '#eee',
-                fontSize: 24,
-                paddingVertical: 3,
-                paddingHorizontal: 15
-              }}
-            >
-              {info.section.title}
-            </Text>
-          )}
-          renderItem={({ item }) => {
-            // we only want to know about the rows that have been swiped, so create the ref here,
-            // and if the item is swiped we'll hold onto it in this.swipedRefs.
-            const ref = React.createRef();
-            return (
-              <Swipeable
-                renderLeftActions={this.renderItemLeftActions.bind(null, item)}
-                renderRightActions={this.renderItemRightActions.bind(
-                  null,
-                  item.id
-                )}
-                onSwipeableLeftOpen={this.onSwipedOpen.bind(null, ref)}
-                onSwipeableRightOpen={this.onSwipedOpen.bind(null, ref)}
-                overshootLeft={false}
-                overshootRight={false}
-                ref={ref}
-              >
-                <Text
-                  style={{
-                    fontSize: 18,
-                    color: theme.text.colorPrimary,
-                    backgroundColor: theme.color.background,
-                    paddingVertical: 15,
-                    paddingHorizontal: 15
-                  }}
-                >
-                  {item.title}
-                </Text>
-              </Swipeable>
-            );
-          }}
-          ItemSeparatorComponent={SomethingElse}
-        />
+        {mainContent}
       </View>
     );
   }
@@ -112,6 +129,20 @@ class ListScreen extends Component {
     const refs = this.swipedRefs.slice(0);
     refs.push(ref);
     this.swipedRefs = refs;
+  };
+
+  renderEmptyList = () => {
+    return (
+      <View
+        style={{
+          paddingHorizontal: 20,
+          paddingVertical: 30,
+          alignItems: 'center'
+        }}
+      >
+        <Text style={{ fontSize: 20 }}>No goals here yet. Add one now!</Text>
+      </View>
+    );
   };
 
   renderItemLeftActions = item => {
@@ -203,10 +234,9 @@ class ListScreen extends Component {
 
     return this.state.items
       .filter(item => item.frequency === this.state.frequency)
-      .filter(
-        item =>
-          // SQLite stores booleans as 1s and 0s, not true/false
-          getCompletedItems ? item.completed === 1 : item.completed === 0
+      .filter(item =>
+        // SQLite stores booleans as 1s and 0s, not true/false
+        getCompletedItems ? item.completed === 1 : item.completed === 0
       )
       .sort(comparator)
       .map(item => {

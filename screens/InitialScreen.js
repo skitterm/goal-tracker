@@ -1,6 +1,14 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, Button } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Button,
+  ActivityIndicator
+} from 'react-native';
+import { NavigationEvents } from 'react-navigation';
 import ProgressBar from '../components/ProgressBar';
+import theme from '../utils/theme';
 
 class InitialScreen extends Component {
   static navigationOptions = {
@@ -11,24 +19,37 @@ class InitialScreen extends Component {
     super(params);
 
     this.state = {
-      items: []
+      items: [],
+      isLoading: true
     };
   }
 
   render() {
-    const contextualUI =
-      this.state.items.length > 0
-        ? this.renderGoalHistoryUI()
-        : this.renderWelcomeUI();
+    const contextualUI = this.state.isLoading
+      ? this.renderLoading()
+      : this.state.items.length > 0
+      ? this.renderGoalHistoryUI()
+      : this.renderWelcomeUI();
 
     return (
-      <View style={{ paddingHorizontal: 20 }}>
+      <View
+        style={{
+          paddingHorizontal: 20,
+          flex: 1
+        }}
+      >
+        <NavigationEvents onWillFocus={this.onWillFocus} />
         <Text
           style={{
             marginTop: 80,
-            fontSize: 36,
+            fontSize: 48,
+            color: theme.color.primary,
+            fontStyle: 'italic',
             fontWeight: 'bold',
-            textAlign: 'center'
+            textAlign: 'center',
+            flexBasis: 'auto',
+            flexGrow: 0,
+            flexShrink: 0
           }}
         >
           Goal Tracker
@@ -41,6 +62,23 @@ class InitialScreen extends Component {
   componentDidMount() {
     this.fetchItems();
   }
+
+  onWillFocus = () => {
+    this.fetchItems();
+  };
+
+  renderLoading = () => {
+    return (
+      <View
+        style={{
+          flex: 1,
+          marginTop: 200
+        }}
+      >
+        <ActivityIndicator size="large" color={theme.icon.colorPrimary} />
+      </View>
+    );
+  };
 
   renderWelcomeUI = () => {
     return (
@@ -63,7 +101,25 @@ class InitialScreen extends Component {
     );
   };
 
+  getPercentage = criteria => {
+    const amountMade = this.state.items.filter(
+      item => item.frequency === criteria && item.completed
+    ).length;
+    const amountTotal = this.state.items.filter(
+      item => item.frequency === criteria
+    ).length;
+
+    return Math.floor((amountMade / amountTotal) * 100);
+  };
+
   renderGoalHistoryUI = () => {
+    const percentages = {
+      daily: this.getPercentage('daily'),
+      weekly: this.getPercentage('weekly'),
+      monthly: this.getPercentage('monthly'),
+      oneTime: this.getPercentage('one-time')
+    };
+
     return (
       <View>
         <Text
@@ -71,28 +127,32 @@ class InitialScreen extends Component {
             fontSize: 24,
             textAlign: 'center',
             marginTop: 30,
-            marginBottom: 60
+            marginBottom: 40
           }}
         >
           Welcome back!
         </Text>
-        <View>
-          <Text style={{ fontSize: 24, fontWeight: 'bold' }}>Goal Summary</Text>
+        <View style={{ marginBottom: 30 }}>
+          <Text
+            style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center' }}
+          >
+            Goal Summary
+          </Text>
           <View style={{ marginVertical: 15, alignItems: 'center' }}>
             <Text style={{ marginBottom: 5, fontSize: 18 }}>Daily</Text>
-            <ProgressBar percent={30} />
+            <ProgressBar percent={percentages.daily} />
           </View>
           <View style={{ marginVertical: 15, alignItems: 'center' }}>
             <Text style={{ marginBottom: 5, fontSize: 18 }}>Weekly</Text>
-            <ProgressBar percent={60} />
+            <ProgressBar percent={percentages.weekly} />
           </View>
           <View style={{ marginVertical: 15, alignItems: 'center' }}>
             <Text style={{ marginBottom: 5, fontSize: 18 }}>Monthly</Text>
-            <ProgressBar percent={90} />
+            <ProgressBar percent={percentages.monthly} />
           </View>
           <View style={{ marginVertical: 15, alignItems: 'center' }}>
             <Text style={{ marginBottom: 5, fontSize: 18 }}>One-Time</Text>
-            <ProgressBar percent={100} />
+            <ProgressBar percent={percentages.oneTime} />
           </View>
         </View>
         <Button
@@ -104,11 +164,15 @@ class InitialScreen extends Component {
   };
 
   fetchItems = () => {
+    this.setState({
+      isLoading: true
+    });
     this.props.screenProps.database
       .readAllRows('Goals')
       .then(items => {
         this.setState({
-          items
+          items,
+          isLoading: false
         });
       })
       .catch(error => {
