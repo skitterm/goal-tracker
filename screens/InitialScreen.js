@@ -94,8 +94,8 @@ class InitialScreen extends Component {
           Welcome! We're glad you're here. Click below to begin.
         </Text>
         <Button
-          title="Create My First Goal"
-          onPress={() => this.props.navigation.navigate('Edit')}
+          title="Start"
+          onPress={() => this.props.navigation.navigate('List')}
         />
       </View>
     );
