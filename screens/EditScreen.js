@@ -7,6 +7,8 @@ import {
   Picker,
   DatePickerIOS,
   TextInput,
+  Keyboard,
+  TouchableWithoutFeedback,
   KeyboardAvoidingView
 } from 'react-native';
 import HeaderButton from '../components/HeaderButton';
@@ -57,46 +59,51 @@ class EditScreen extends Component {
     );
 
     return (
-      <KeyboardAvoidingView
-        behavior="padding"
-        style={{
-          flex: 1
-        }}
-      >
-        <TextInput
-          placeholder="Goal title"
-          style={styles.text}
-          value={this.state.title}
-          onChangeText={this.onTitleChange}
-        />
-        <TextInput
-          placeholder="More about your goal..."
-          style={[styles.text, styles.multilineText]}
-          value={this.state.description}
-          onChangeText={this.onDescriptionChange}
-        />
-        <View>
-          <Picker
-            selectedValue={this.state.frequency}
-            onValueChange={this.onFrequencyChange}
-          >
-            <Picker.Item label="Daily" value="daily" />
-            <Picker.Item label="Weekly" value="weekly" />
-            <Picker.Item label="Monthly" value="monthly" />
-            <Picker.Item label="One-time" value="one-time" />
-          </Picker>
-          <DatePickerIOS
-            date={new Date(this.state.deadline)}
-            minimumDate={new Date()}
-            onDateChange={this.onDeadlineChange}
-            minuteInterval={30}
-            style={{
-              display: this.state.frequency === 'one-time' ? 'flex' : 'none'
-            }}
+      // Kudos to this answer for how to dismiss keyboard when clicking out of text inputs:
+      // https://stackoverflow.com/a/34779467
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView
+          behavior="padding"
+          style={{
+            flex: 1
+          }}
+        >
+          <TextInput
+            placeholder="Goal title"
+            style={styles.text}
+            value={this.state.title}
+            onChangeText={this.onTitleChange}
           />
-        </View>
-        {saveButton}
-      </KeyboardAvoidingView>
+          <TextInput
+            placeholder="More about your goal..."
+            style={[styles.text, styles.multilineText]}
+            value={this.state.description}
+            onChangeText={this.onDescriptionChange}
+          />
+          <View style={{ marginTop: 20 }}>
+            <Picker
+              selectedValue={this.state.frequency}
+              onValueChange={this.onFrequencyChange}
+            >
+              <Picker.Item label="Daily" value="daily" />
+              <Picker.Item label="Weekly" value="weekly" />
+              <Picker.Item label="Monthly" value="monthly" />
+              <Picker.Item label="One-time" value="one-time" />
+            </Picker>
+            <DatePickerIOS
+              date={new Date(this.state.deadline)}
+              minimumDate={new Date()}
+              onDateChange={this.onDeadlineChange}
+              minuteInterval={30}
+              style={{
+                display: this.state.frequency === 'one-time' ? 'flex' : 'none',
+                marginTop: -30
+              }}
+            />
+          </View>
+          {saveButton}
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     );
   }
 
@@ -234,7 +241,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     paddingVertical: 5,
     paddingHorizontal: 30,
-    marginVertical: 10
+    marginBottom: 30
   },
   multilineText: {
     fontSize: 18

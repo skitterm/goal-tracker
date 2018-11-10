@@ -1,5 +1,11 @@
 import React, { Component } from 'react';
-import { Text, View, SegmentedControlIOS, SectionList } from 'react-native';
+import {
+  Button,
+  Text,
+  View,
+  SegmentedControlIOS,
+  SectionList
+} from 'react-native';
 import { NavigationEvents } from 'react-navigation';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import theme from '../utils/theme';
@@ -140,7 +146,10 @@ class ListScreen extends Component {
           alignItems: 'center'
         }}
       >
-        <Text style={{ fontSize: 20 }}>No goals here yet. Add one now!</Text>
+        <Text style={{ fontSize: 20, marginBottom: 20, color: '#aaa' }}>
+          No goals here yet.
+        </Text>
+        <Button title="Add a Goal" onPress={this.segueToEdit} />
       </View>
     );
   };
