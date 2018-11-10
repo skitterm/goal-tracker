@@ -1,11 +1,14 @@
 import { SQLite } from 'expo';
+// wrapper for the Expo SQLite module (https://docs.expo.io/versions/latest/sdk/sqlite)
 
 export default class DatabaseWrapper {
   constructor(params) {
+    // make sure the database is open before using
     this.database = SQLite.openDatabase(params.name);
     this.tables = {};
   }
 
+  // adds the table to the database
   addTable(name, schema) {
     const schemaQuery = this.createSchemaQuery(schema);
 
@@ -13,10 +16,12 @@ export default class DatabaseWrapper {
     this.tables[name] = schema;
   }
 
+  // create new database row
   addRow = (table, dataMap) => {
     const fields = [];
     const values = [];
 
+    // for each field in the row, add it to the values array.
     dataMap.forEach((value, key) => {
       fields.push(key);
       values.push(typeof value === 'string' ? `"${value}"` : value.toString());
@@ -31,6 +36,7 @@ export default class DatabaseWrapper {
     });
   };
 
+  // fetch a selection of rows
   readRows = (table, condition) => {
     return this.executeQuery(
       `select * from ${table} where ${condition.field} = "${condition.value}"`
@@ -39,12 +45,14 @@ export default class DatabaseWrapper {
     });
   };
 
+  // fetch all rows in a table
   readAllRows = table => {
     return this.executeQuery(`select * from ${table}`).then(resultSet => {
       return resultSet.rows._array;
     });
   };
 
+  // edit a row
   updateRow = (table, fieldsToUpdate, condition) => {
     let setClause = '';
 
@@ -67,6 +75,7 @@ export default class DatabaseWrapper {
     });
   };
 
+  // remove a row
   deleteRow = (table, condition) => {
     return this.executeQuery(
       `delete from ${table} where ${condition.field} = "${condition.value}"`
@@ -75,6 +84,7 @@ export default class DatabaseWrapper {
     });
   };
 
+  // generic utility for executing a database transaction.
   executeQuery(sqlStatement) {
     return new Promise((resolve, reject) => {
       this.database.transaction(
@@ -98,12 +108,15 @@ export default class DatabaseWrapper {
     });
   }
 
+  // used to seed a generic database table
   createSchemaQuery(schemaMap) {
     // iterate over the map. For each, build out its text string accordingly.
     const schemaStatements = [];
 
     schemaMap.forEach((value, key) => {
+      // base statements are just the name and the type of data
       const baseStatement = `${key} ${value.type}`;
+      // extra statements could include not null, primary key, or autoincrement
       const extraStatements = [];
 
       if (value.nullable === false) {

@@ -10,6 +10,7 @@ import { NavigationEvents } from 'react-navigation';
 import ProgressBar from '../components/ProgressBar';
 import theme from '../utils/theme';
 
+// The landing screen of the app. Shows a welcome message if no goals created, otherwise shows a summary of goal progress.
 class InitialScreen extends Component {
   static navigationOptions = {
     header: null
@@ -25,6 +26,7 @@ class InitialScreen extends Component {
   }
 
   render() {
+    // show loading indicator if loading, or the welcome message if there aren't any goals, or the goal progress.
     const contextualUI = this.state.isLoading
       ? this.renderLoading()
       : this.state.items.length > 0
@@ -152,6 +154,7 @@ class InitialScreen extends Component {
     );
   };
 
+  // find the percentage of goals that have been completed
   getPercentage = criteria => {
     const amountMade = this.state.items.filter(
       item => item.frequency === criteria && item.completed
@@ -163,6 +166,7 @@ class InitialScreen extends Component {
     return Math.floor((amountMade / amountTotal) * 100);
   };
 
+  // get all the goals from the database
   fetchItems = () => {
     this.setState({
       isLoading: true

@@ -13,6 +13,7 @@ import SwipeableActionButton from '../components/SwipeableActionButton';
 import HeaderButton from '../components/HeaderButton';
 import ItemSeparator from '../components/ItemSeparator';
 
+// Shows a list of goals in their to-do and done buckets. Allows for tabbing between different time periods of goals.
 class ListScreen extends Component {
   static navigationOptions = ({ navigation }) => {
     return {
@@ -47,6 +48,7 @@ class ListScreen extends Component {
   }
 
   render() {
+    // the list will show subsections for to-do and done items
     const toDoItems = { title: 'To-Do', data: this.getFilteredItems(false) };
     const doneItems = { title: 'Done', data: this.getFilteredItems(true) };
     const sections = [];
@@ -137,6 +139,7 @@ class ListScreen extends Component {
       segueToEdit: this.segueToEdit
     });
 
+    // fetch the goals
     this.fetchItems();
   };
 
@@ -161,6 +164,7 @@ class ListScreen extends Component {
     }
   };
 
+  // when we swipe a goal, we need to "unswipe" it when moving away from this screen... this way we know which goals to "unswipe".
   onSwipedOpen = ref => {
     const refs = this.swipedRefs.slice(0);
     refs.push(ref);
@@ -184,6 +188,7 @@ class ListScreen extends Component {
     );
   };
 
+  // the actions shown when swiping right
   renderItemLeftActions = item => {
     return item.completed ? null : (
       <View style={{ display: 'flex', flexDirection: 'row' }}>
@@ -195,6 +200,7 @@ class ListScreen extends Component {
     );
   };
 
+  // the actions shown when swiping left
   renderItemRightActions = id => {
     return (
       <View style={{ display: 'flex', flexDirection: 'row' }}>
@@ -242,6 +248,7 @@ class ListScreen extends Component {
       });
   };
 
+  // get the goals that fit the crieteria listed.
   getFilteredItems = getCompletedItems => {
     const comparator =
       this.state.frequency === 'one-time'
@@ -289,6 +296,7 @@ class ListScreen extends Component {
     });
   };
 
+  // mark a goal as completed in the database.
   completeItem = item => {
     if (this.props.screenProps.database) {
       return this.props.screenProps.database

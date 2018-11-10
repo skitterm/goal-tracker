@@ -3,6 +3,7 @@ import { TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import theme from '../../utils/theme';
 
+// reusable button styles for a header button.
 const HeaderButton = props => {
   return (
     <TouchableOpacity onPress={props.onPress} style={{ paddingHorizontal: 8 }}>

@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import HeaderButton from '../components/HeaderButton';
 
+// The screen where goals are created and edited
 class EditScreen extends Component {
   static navigationOptions = ({ navigation }) => {
     return {
@@ -135,6 +136,7 @@ class EditScreen extends Component {
     });
   }
 
+  // important utility to determine if we are in create or edit mode
   hasId = () => {
     return typeof this.props.navigation.getParam('id') === 'number';
   };

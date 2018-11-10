@@ -1,65 +1,66 @@
+// The shape of the data in the database.
 const schema = new Map([
   [
-    "id",
+    'id',
     {
-      type: "integer",
+      type: 'integer',
       nullable: false,
       isPrimaryKey: true,
       autoIncrement: true
     }
   ],
   [
-    "title",
-    { type: "text", nullable: true, isPrimaryKey: false, autoIncrement: false }
+    'title',
+    { type: 'text', nullable: true, isPrimaryKey: false, autoIncrement: false }
   ],
   [
-    "description",
-    { type: "text", nullable: true, isPrimaryKey: false, autoIncrement: false }
+    'description',
+    { type: 'text', nullable: true, isPrimaryKey: false, autoIncrement: false }
   ],
   [
-    "frequency",
-    { type: "text", nullable: false, isPrimaryKey: false, autoIncrement: false }
+    'frequency',
+    { type: 'text', nullable: false, isPrimaryKey: false, autoIncrement: false }
   ],
   [
-    "deadline",
+    'deadline',
     {
-      type: "integer",
+      type: 'integer',
       nullable: false,
       isPrimaryKey: false,
       autoIncrement: false
     }
   ],
   [
-    "inProgress",
+    'inProgress',
     {
-      type: "integer",
+      type: 'integer',
       nullable: true,
       isPrimaryKey: false,
       autoIncrement: false
     }
   ],
   [
-    "completed",
+    'completed',
     {
-      type: "integer",
+      type: 'integer',
       nullable: true,
       isPrimaryKey: false,
       autoIncrement: false
     }
   ],
   [
-    "timesAchieved",
+    'timesAchieved',
     {
-      type: "integer",
+      type: 'integer',
       nullable: true,
       isPrimaryKey: false,
       autoIncrement: false
     }
   ],
   [
-    "timesMissed",
+    'timesMissed',
     {
-      type: "integer",
+      type: 'integer',
       nullable: true,
       isPrimaryKey: false,
       autoIncrement: false

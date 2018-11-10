@@ -1,3 +1,5 @@
+// Theme structure to be reused around the site, and for consistency.
+
 const color = {
   primary: '#007AFF',
   background: 'white',
