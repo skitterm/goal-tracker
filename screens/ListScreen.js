@@ -1,25 +1,29 @@
 import React, { Component } from 'react';
 import {
-  StyleSheet,
+  Button,
   Text,
   View,
-  Button,
   SegmentedControlIOS,
-  FlatList
+  SectionList
 } from 'react-native';
 import { NavigationEvents } from 'react-navigation';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
+import theme from '../utils/theme';
+import SwipeableActionButton from '../components/SwipeableActionButton';
+import HeaderButton from '../components/HeaderButton';
+import ItemSeparator from '../components/ItemSeparator';
 
+// Shows a list of goals in their to-do and done buckets. Allows for tabbing between different time periods of goals.
 class ListScreen extends Component {
   static navigationOptions = ({ navigation }) => {
     return {
       title: 'Goals List',
       headerRight: (
-        <Button
-          title="Create"
+        <HeaderButton
+          iconName="add"
           onPress={() => {
-            // segueToCreate doesn't exist initially
-            navigation.getParam('segueToCreate')();
+            // segueToEdit doesn't exist initially
+            navigation.getParam('segueToEdit')();
           }}
         />
       )
@@ -39,29 +43,65 @@ class ListScreen extends Component {
       items: [],
       frequency: 'daily'
     };
+    // for some reason doing this with state doesn't work (ref.current is null), so use instance variable instead
+    this.swipedRefs = [];
   }
 
   render() {
-    return (
-      <View>
-        <NavigationEvents onDidFocus={this.onDidFocus} />
-        <FlatList
-          style={{ backgroundColor: 'white' }}
-          data={this.getFilteredItems()}
-          renderItem={({ item }) => (
+    // the list will show subsections for to-do and done items
+    const toDoItems = { title: 'To-Do', data: this.getFilteredItems(false) };
+    const doneItems = { title: 'Done', data: this.getFilteredItems(true) };
+    const sections = [];
+    let showList = true;
+    if (toDoItems.data.length) {
+      sections.push(toDoItems);
+    }
+    if (doneItems.data.length) {
+      sections.push(doneItems);
+    }
+    if (!toDoItems.data.length && !doneItems.data.length) {
+      showList = false;
+    }
+
+    const mainContent = showList ? (
+      <SectionList
+        style={{ flex: 1 }}
+        sections={sections}
+        renderSectionHeader={info => (
+          <Text
+            style={{
+              fontWeight: 'bold',
+              backgroundColor: '#eee',
+              fontSize: 24,
+              paddingVertical: 3,
+              paddingHorizontal: 15
+            }}
+          >
+            {info.section.title}
+          </Text>
+        )}
+        renderItem={({ item }) => {
+          // we only want to know about the rows that have been swiped, so create the ref here,
+          // and if the item is swiped we'll hold onto it in this.swipedRefs.
+          const ref = React.createRef();
+          return (
             <Swipeable
+              renderLeftActions={this.renderItemLeftActions.bind(null, item)}
               renderRightActions={this.renderItemRightActions.bind(
                 null,
                 item.id
               )}
+              onSwipeableLeftOpen={this.onSwipedOpen.bind(null, ref)}
+              onSwipeableRightOpen={this.onSwipedOpen.bind(null, ref)}
               overshootLeft={false}
               overshootRight={false}
+              ref={ref}
             >
               <Text
                 style={{
                   fontSize: 18,
-                  color: '#333',
-                  backgroundColor: 'white',
+                  color: theme.text.colorPrimary,
+                  backgroundColor: theme.color.background,
                   paddingVertical: 15,
                   paddingHorizontal: 15
                 }}
@@ -69,29 +109,110 @@ class ListScreen extends Component {
                 {item.title}
               </Text>
             </Swipeable>
-          )}
-          ItemSeparatorComponent={SomethingElse}
-          ListHeaderComponent={
-            <SegmentedControlIOS
-              style={{ marginHorizontal: 15, marginVertical: 10 }}
-              values={['D', 'W', 'M', '1x']}
-              selectedIndex={this.filterIndex[this.state.frequency]}
-              onValueChange={this.onFilterChange}
-            />
-          }
+          );
+        }}
+        ItemSeparatorComponent={ItemSeparator}
+      />
+    ) : (
+      this.renderEmptyList()
+    );
+
+    return (
+      <View style={{ backgroundColor: theme.color.background, flex: 1 }}>
+        <NavigationEvents
+          onDidFocus={this.onDidFocus}
+          onDidBlur={this.onDidBlur}
         />
+        <SegmentedControlIOS
+          style={{ marginHorizontal: 15, marginVertical: 10 }}
+          values={['D', 'W', 'M', '1x']}
+          selectedIndex={this.filterIndex[this.state.frequency]}
+          onValueChange={this.onFilterChange}
+        />
+        {mainContent}
       </View>
     );
   }
 
+  componentDidMount = () => {
+    this.props.navigation.setParams({
+      segueToEdit: this.segueToEdit
+    });
+
+    // fetch the goals
+    this.fetchItems();
+  };
+
+  segueToEdit = id => {
+    this.props.navigation.navigate('Edit', {
+      id
+    });
+  };
+
+  onDidFocus = () => {
+    this.setState({
+      frequency: this.props.navigation.getParam('frequency', 'daily')
+    });
+
+    this.fetchItems();
+  };
+
+  onDidBlur = () => {
+    // close all of the expanded swipeable rows
+    for (let ref of this.swipedRefs) {
+      ref.current && ref.current.close();
+    }
+  };
+
+  // when we swipe a goal, we need to "unswipe" it when moving away from this screen... this way we know which goals to "unswipe".
+  onSwipedOpen = ref => {
+    const refs = this.swipedRefs.slice(0);
+    refs.push(ref);
+    this.swipedRefs = refs;
+  };
+
+  renderEmptyList = () => {
+    return (
+      <View
+        style={{
+          paddingHorizontal: 20,
+          paddingVertical: 30,
+          alignItems: 'center'
+        }}
+      >
+        <Text style={{ fontSize: 20, marginBottom: 20, color: '#aaa' }}>
+          No goals here yet.
+        </Text>
+        <Button title="Add a Goal" onPress={this.segueToEdit} />
+      </View>
+    );
+  };
+
+  // the actions shown when swiping right
+  renderItemLeftActions = item => {
+    return item.completed ? null : (
+      <View style={{ display: 'flex', flexDirection: 'row' }}>
+        <SwipeableActionButton
+          onPress={this.completeItem.bind(this, item)}
+          iconName="check"
+        />
+      </View>
+    );
+  };
+
+  // the actions shown when swiping left
   renderItemRightActions = id => {
     return (
-      <View style={{ backgroundColor: 'red' }}>
-        <Button
+      <View style={{ display: 'flex', flexDirection: 'row' }}>
+        <SwipeableActionButton
+          onPress={this.segueToEdit.bind(this, id)}
+          iconName="edit"
+        />
+        <SwipeableActionButton
           onPress={() => {
             this.deleteItem(id);
           }}
-          title="Delete"
+          iconName="delete"
         />
       </View>
     );
@@ -110,23 +231,8 @@ class ListScreen extends Component {
         }
       })
       .catch(error => {
-        debugger;
+        //
       });
-  };
-
-  componentDidMount = () => {
-    this.props.navigation.setParams({
-      segueToCreate: this.segueToCreate
-    });
-
-    this.fetchItems();
-  };
-
-  onDidFocus = () => {
-    this.setState({
-      frequency: this.props.navigation.getParam('frequency', 'daily')
-    });
-    this.fetchItems();
   };
 
   fetchItems = () => {
@@ -138,11 +244,12 @@ class ListScreen extends Component {
         });
       })
       .catch(error => {
-        debugger;
+        //;
       });
   };
 
-  getFilteredItems = () => {
+  // get the goals that fit the crieteria listed.
+  getFilteredItems = getCompletedItems => {
     const comparator =
       this.state.frequency === 'one-time'
         ? this.dateComparator
@@ -150,6 +257,10 @@ class ListScreen extends Component {
 
     return this.state.items
       .filter(item => item.frequency === this.state.frequency)
+      .filter(item =>
+        // SQLite stores booleans as 1s and 0s, not true/false
+        getCompletedItems ? item.completed === 1 : item.completed === 0
+      )
       .sort(comparator)
       .map(item => {
         return Object.assign({}, item, { key: item.id.toString() });
@@ -172,10 +283,6 @@ class ListScreen extends Component {
     return a.deadline - b.deadline;
   };
 
-  segueToCreate = () => {
-    this.props.navigation.navigate('Create');
-  };
-
   onFilterChange = value => {
     const filterOptions = {
       D: 'daily',
@@ -188,12 +295,31 @@ class ListScreen extends Component {
       frequency: filterOptions[value]
     });
   };
-}
 
-class SomethingElse extends Component {
-  render() {
-    return <View style={{ borderTopColor: '#eee', borderTopWidth: 1 }} />;
-  }
+  // mark a goal as completed in the database.
+  completeItem = item => {
+    if (this.props.screenProps.database) {
+      return this.props.screenProps.database
+        .updateRow(
+          'Goals',
+          [
+            { name: 'completed', value: 1 },
+            { name: 'inProgress', value: 0 },
+            { name: 'timesAchieved', value: item.timesAchieved + 1 }
+          ],
+          {
+            field: 'id',
+            value: item.id
+          }
+        )
+        .then(rowsAffected => {
+          this.fetchItems();
+        })
+        .catch(error => {
+          //;
+        });
+    }
+  };
 }
 
 export default ListScreen;

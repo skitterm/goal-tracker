@@ -1,24 +1,90 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, Button } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Button,
+  ActivityIndicator
+} from 'react-native';
+import { NavigationEvents } from 'react-navigation';
+import ProgressBar from '../components/ProgressBar';
+import theme from '../utils/theme';
 
+// The landing screen of the app. Shows a welcome message if no goals created, otherwise shows a summary of goal progress.
 class InitialScreen extends Component {
   static navigationOptions = {
     header: null
   };
 
+  constructor(params) {
+    super(params);
+
+    this.state = {
+      items: [],
+      isLoading: true
+    };
+  }
+
   render() {
+    // show loading indicator if loading, or the welcome message if there aren't any goals, or the goal progress.
+    const contextualUI = this.state.isLoading
+      ? this.renderLoading()
+      : this.state.items.length > 0
+      ? this.renderGoalHistoryUI()
+      : this.renderWelcomeUI();
+
     return (
-      <View>
+      <View
+        style={{
+          paddingHorizontal: 20,
+          flex: 1
+        }}
+      >
+        <NavigationEvents onWillFocus={this.onWillFocus} />
         <Text
           style={{
             marginTop: 80,
-            fontSize: 36,
+            fontSize: 48,
+            color: theme.color.primary,
+            fontStyle: 'italic',
             fontWeight: 'bold',
-            textAlign: 'center'
+            textAlign: 'center',
+            flexBasis: 'auto',
+            flexGrow: 0,
+            flexShrink: 0
           }}
         >
-          Welcome to Goal Tracker!
+          Goal Tracker
         </Text>
+        {contextualUI}
+      </View>
+    );
+  }
+
+  componentDidMount() {
+    this.fetchItems();
+  }
+
+  onWillFocus = () => {
+    this.fetchItems();
+  };
+
+  renderLoading = () => {
+    return (
+      <View
+        style={{
+          flex: 1,
+          marginTop: 200
+        }}
+      >
+        <ActivityIndicator size="large" color={theme.icon.colorPrimary} />
+      </View>
+    );
+  };
+
+  renderWelcomeUI = () => {
+    return (
+      <View>
         <Text
           style={{
             fontSize: 24,
@@ -27,15 +93,107 @@ class InitialScreen extends Component {
             marginBottom: 60
           }}
         >
-          We're glad you're here. Click below to begin.
+          Welcome! We're glad you're here. Click below to begin.
         </Text>
         <Button
-          title="Create My First Goal"
-          onPress={() => this.props.navigation.navigate('Create')}
+          title="Start"
+          onPress={() => this.props.navigation.navigate('List')}
         />
       </View>
     );
-  }
+  };
+
+  renderGoalHistoryUI = () => {
+    const percentages = {
+      daily: this.getPercentage('daily'),
+      weekly: this.getPercentage('weekly'),
+      monthly: this.getPercentage('monthly'),
+      oneTime: this.getPercentage('one-time')
+    };
+
+    return (
+      <View>
+        <Text
+          style={{
+            fontSize: 24,
+            textAlign: 'center',
+            marginTop: 30,
+            marginBottom: 40
+          }}
+        >
+          Welcome back!
+        </Text>
+        <View style={{ marginBottom: 30 }}>
+          <Text
+            style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center' }}
+          >
+            Goal Summary
+          </Text>
+          <View style={styles.progressBarContainer}>
+            <Text style={styles.progressBarText}>Daily</Text>
+            <ProgressBar percent={percentages.daily} />
+          </View>
+          <View style={styles.progressBarContainer}>
+            <Text style={styles.progressBarText}>Weekly</Text>
+            <ProgressBar percent={percentages.weekly} />
+          </View>
+          <View style={styles.progressBarContainer}>
+            <Text style={styles.progressBarText}>Monthly</Text>
+            <ProgressBar percent={percentages.monthly} />
+          </View>
+          <View style={styles.progressBarContainer}>
+            <Text style={styles.progressBarText}>One-Time</Text>
+            <ProgressBar percent={percentages.oneTime} />
+          </View>
+        </View>
+        <Button
+          title="See My Goals"
+          onPress={() => this.props.navigation.navigate('List')}
+        />
+      </View>
+    );
+  };
+
+  // find the percentage of goals that have been completed
+  getPercentage = criteria => {
+    const amountMade = this.state.items.filter(
+      item => item.frequency === criteria && item.completed
+    ).length;
+    const amountTotal = this.state.items.filter(
+      item => item.frequency === criteria
+    ).length;
+
+    return Math.floor((amountMade / amountTotal) * 100);
+  };
+
+  // get all the goals from the database
+  fetchItems = () => {
+    this.setState({
+      isLoading: true
+    });
+    this.props.screenProps.database
+      .readAllRows('Goals')
+      .then(items => {
+        this.setState({
+          items,
+          isLoading: false
+        });
+      })
+      .catch(error => {
+        //
+      });
+  };
 }
 
 export default InitialScreen;
+
+const styles = StyleSheet.create({
+  progressBarContainer: {
+    marginVertical: 15,
+    alignItems: 'center'
+  },
+  progressBarText: {
+    marginBottom: 5,
+    fontSize: 18
+  }
+});
