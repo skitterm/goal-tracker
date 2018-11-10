@@ -11,6 +11,7 @@ import Swipeable from 'react-native-gesture-handler/Swipeable';
 import theme from '../utils/theme';
 import SwipeableActionButton from '../components/SwipeableActionButton';
 import HeaderButton from '../components/HeaderButton';
+import ItemSeparator from '../components/ItemSeparator';
 
 class ListScreen extends Component {
   static navigationOptions = ({ navigation }) => {
@@ -108,7 +109,7 @@ class ListScreen extends Component {
             </Swipeable>
           );
         }}
-        ItemSeparatorComponent={SomethingElse}
+        ItemSeparatorComponent={ItemSeparator}
       />
     ) : (
       this.renderEmptyList()
@@ -130,6 +131,35 @@ class ListScreen extends Component {
       </View>
     );
   }
+
+  componentDidMount = () => {
+    this.props.navigation.setParams({
+      segueToEdit: this.segueToEdit
+    });
+
+    this.fetchItems();
+  };
+
+  segueToEdit = id => {
+    this.props.navigation.navigate('Edit', {
+      id
+    });
+  };
+
+  onDidFocus = () => {
+    this.setState({
+      frequency: this.props.navigation.getParam('frequency', 'daily')
+    });
+
+    this.fetchItems();
+  };
+
+  onDidBlur = () => {
+    // close all of the expanded swipeable rows
+    for (let ref of this.swipedRefs) {
+      ref.current && ref.current.close();
+    }
+  };
 
   onSwipedOpen = ref => {
     const refs = this.swipedRefs.slice(0);
@@ -195,31 +225,8 @@ class ListScreen extends Component {
         }
       })
       .catch(error => {
-        debugger;
+        //
       });
-  };
-
-  componentDidMount = () => {
-    this.props.navigation.setParams({
-      segueToEdit: this.segueToEdit
-    });
-
-    this.fetchItems();
-  };
-
-  onDidFocus = () => {
-    this.setState({
-      frequency: this.props.navigation.getParam('frequency', 'daily')
-    });
-
-    this.fetchItems();
-  };
-
-  onDidBlur = () => {
-    // close all of the expanded swipeable rows
-    for (let ref of this.swipedRefs) {
-      ref.current && ref.current.close();
-    }
   };
 
   fetchItems = () => {
@@ -231,7 +238,7 @@ class ListScreen extends Component {
         });
       })
       .catch(error => {
-        debugger;
+        //;
       });
   };
 
@@ -269,12 +276,6 @@ class ListScreen extends Component {
     return a.deadline - b.deadline;
   };
 
-  segueToEdit = id => {
-    this.props.navigation.navigate('Edit', {
-      id
-    });
-  };
-
   onFilterChange = value => {
     const filterOptions = {
       D: 'daily',
@@ -307,18 +308,10 @@ class ListScreen extends Component {
           this.fetchItems();
         })
         .catch(error => {
-          debugger;
+          //;
         });
     }
   };
-}
-
-class SomethingElse extends Component {
-  render() {
-    return (
-      <View style={{ borderTopColor: theme.color.border, borderTopWidth: 1 }} />
-    );
-  }
 }
 
 export default ListScreen;

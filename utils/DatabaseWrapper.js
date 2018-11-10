@@ -98,22 +98,6 @@ export default class DatabaseWrapper {
     });
   }
 
-  onTransactionSuccess = (transaction, resultSet) => {
-    debugger;
-  };
-
-  onTransactionError = (transaction, error) => {
-    debugger;
-  };
-
-  onDBSuccess = (one, two, three) => {
-    debugger;
-  };
-
-  onDBError = (one, two, three) => {
-    debugger;
-  };
-
   createSchemaQuery(schemaMap) {
     // iterate over the map. For each, build out its text string accordingly.
     const schemaStatements = [];

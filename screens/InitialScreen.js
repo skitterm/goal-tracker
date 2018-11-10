@@ -101,17 +101,6 @@ class InitialScreen extends Component {
     );
   };
 
-  getPercentage = criteria => {
-    const amountMade = this.state.items.filter(
-      item => item.frequency === criteria && item.completed
-    ).length;
-    const amountTotal = this.state.items.filter(
-      item => item.frequency === criteria
-    ).length;
-
-    return Math.floor((amountMade / amountTotal) * 100);
-  };
-
   renderGoalHistoryUI = () => {
     const percentages = {
       daily: this.getPercentage('daily'),
@@ -138,20 +127,20 @@ class InitialScreen extends Component {
           >
             Goal Summary
           </Text>
-          <View style={{ marginVertical: 15, alignItems: 'center' }}>
-            <Text style={{ marginBottom: 5, fontSize: 18 }}>Daily</Text>
+          <View style={styles.progressBarContainer}>
+            <Text style={styles.progressBarText}>Daily</Text>
             <ProgressBar percent={percentages.daily} />
           </View>
-          <View style={{ marginVertical: 15, alignItems: 'center' }}>
-            <Text style={{ marginBottom: 5, fontSize: 18 }}>Weekly</Text>
+          <View style={styles.progressBarContainer}>
+            <Text style={styles.progressBarText}>Weekly</Text>
             <ProgressBar percent={percentages.weekly} />
           </View>
-          <View style={{ marginVertical: 15, alignItems: 'center' }}>
-            <Text style={{ marginBottom: 5, fontSize: 18 }}>Monthly</Text>
+          <View style={styles.progressBarContainer}>
+            <Text style={styles.progressBarText}>Monthly</Text>
             <ProgressBar percent={percentages.monthly} />
           </View>
-          <View style={{ marginVertical: 15, alignItems: 'center' }}>
-            <Text style={{ marginBottom: 5, fontSize: 18 }}>One-Time</Text>
+          <View style={styles.progressBarContainer}>
+            <Text style={styles.progressBarText}>One-Time</Text>
             <ProgressBar percent={percentages.oneTime} />
           </View>
         </View>
@@ -161,6 +150,17 @@ class InitialScreen extends Component {
         />
       </View>
     );
+  };
+
+  getPercentage = criteria => {
+    const amountMade = this.state.items.filter(
+      item => item.frequency === criteria && item.completed
+    ).length;
+    const amountTotal = this.state.items.filter(
+      item => item.frequency === criteria
+    ).length;
+
+    return Math.floor((amountMade / amountTotal) * 100);
   };
 
   fetchItems = () => {
@@ -176,9 +176,20 @@ class InitialScreen extends Component {
         });
       })
       .catch(error => {
-        debugger;
+        //
       });
   };
 }
 
 export default InitialScreen;
+
+const styles = StyleSheet.create({
+  progressBarContainer: {
+    marginVertical: 15,
+    alignItems: 'center'
+  },
+  progressBarText: {
+    marginBottom: 5,
+    fontSize: 18
+  }
+});

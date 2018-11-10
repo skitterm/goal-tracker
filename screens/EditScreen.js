@@ -126,7 +126,7 @@ class EditScreen extends Component {
           }
         })
         .catch(error => {
-          debugger;
+          //;
         });
     }
 
@@ -184,7 +184,7 @@ class EditScreen extends Component {
           });
         })
         .catch(error => {
-          debugger;
+          //;
         });
     }
   };
@@ -211,7 +211,7 @@ class EditScreen extends Component {
           });
         })
         .catch(error => {
-          debugger;
+          //;
         });
     }
   };
@@ -228,7 +228,7 @@ class EditScreen extends Component {
         });
       })
       .catch(error => {
-        debugger;
+        //;
       });
   };
 }
