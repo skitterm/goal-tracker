@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "goal-tracker",
-    "description": "This project is really great.",
+    "description": "An application to help you achieve goals and facilitate accountability.",
     "slug": "goal-tracker",
     "privacy": "public",
     "sdkVersion": "30.0.0",
@@ -17,9 +17,7 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     }
